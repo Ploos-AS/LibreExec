@@ -1,19 +1,13 @@
 #include "libreexec/base.h"
 
-/*
- * First standalone kernel entry point.
- *
- * M2.0 deliberately avoids AmigaOS calls, libc and proprietary headers.
- * The volatile heartbeat gives later emulator/runtime qualification an
- * observable state transition without introducing hardware dependencies yet.
- */
-volatile le_u32 libreexec_boot_heartbeat;
+#define AMIGA_COLOR00 (*(volatile le_u16 *)0x00dff180u)
 
+/* First hardware-observable standalone kernel entry. */
 void libreexec_kernel_main(void)
 {
-    libreexec_boot_heartbeat = 0x4c455832u; /* "LEX2" */
+    AMIGA_COLOR00 = 0x00f0u; /* green: LibreExec reached C entry */
 
     for (;;) {
-        libreexec_boot_heartbeat++;
+        __asm__ volatile ("stop #0x2700");
     }
 }
