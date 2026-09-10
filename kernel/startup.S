@@ -1,8 +1,4 @@
-/* LibreExec M2.0 68000 reset entry.
- *
- * This is a clean-room bootstrap contract. Final ROM placement is defined
- * by the linker/image stage in M2.1.
- */
+/* LibreExec M2.1 68000 reset entry for classic Amiga ROM overlay. */
 
     .section .text.boot,"ax"
     .align 2
@@ -11,7 +7,12 @@
 
 libreexec_reset:
     move.w  #0x2700,%sr
-    lea     libreexec_boot_stack_top,%sp
+
+    /* CIAA PA0 is OVL. Configure PA0/PA1 as outputs, then clear OVL so
+     * address zero is backed by Chip RAM before entering C code. */
+    move.b  #0x03,0x00bfe201
+    bclr    #0,0x00bfe001
+
     jsr     libreexec_kernel_main
 
 1:
@@ -19,11 +20,3 @@ libreexec_reset:
     bra.s   1b
 
     .size libreexec_reset,.-libreexec_reset
-
-    .section .bss.boot,"aw",@nobits
-    .align 4
-    .globl libreexec_boot_stack
-libreexec_boot_stack:
-    .space  4096
-    .globl libreexec_boot_stack_top
-libreexec_boot_stack_top:
