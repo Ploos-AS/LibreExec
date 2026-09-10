@@ -20,10 +20,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Qualify real 68000 cross-build
+      - name: Prepare cross-build output
+        run: mkdir -p build/m68k
+      - name: Compile core for 68000
         run: |
           docker run --rm \
             -v "$PWD:/work" \
             -w /work \
             amigadev/m68k-amigaos-gcc:latest \
-            make check-m1_1
+            m68k-amigaos-gcc -m68000 -ffreestanding -Wall -Wextra -Werror -Iinclude -c src/core.c -o build/m68k/core.o
+      - name: Compile Exec nucleus for 68000
+        run: |
+          docker run --rm \
+            -v "$PWD:/work" \
+            -w /work \
+            amigadev/m68k-amigaos-gcc:latest \
+            m68k-amigaos-gcc -m68000 -ffreestanding -Wall -Wextra -Werror -Iinclude -c src/exec.c -o build/m68k/exec.o
+      - name: Verify m68k objects
+        run: |
+          file build/m68k/core.o
+          file build/m68k/exec.o
+          file build/m68k/core.o | grep -qi 'Motorola 68000\|m68k'
+          file build/m68k/exec.o | grep -qi 'Motorola 68000\|m68k'
