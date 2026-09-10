@@ -3,14 +3,27 @@ name: CI
 on:
   push:
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  m0:
+  host:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Qualify M0
+      - name: Qualify host gates
         run: make clean && make check
+
+  m68k-68000:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Qualify real 68000 cross-build
+        run: |
+          docker run --rm \
+            -v "$PWD:/work" \
+            -w /work \
+            amigadev/m68k-amigaos-gcc:latest \
+            make check-m1_1
