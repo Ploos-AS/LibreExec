@@ -36,9 +36,23 @@ jobs:
             -w /work \
             amigadev/m68k-amigaos-gcc:latest \
             m68k-amigaos-gcc -m68000 -ffreestanding -Wall -Wextra -Werror -Iinclude -c src/exec.c -o build/m68k/exec.o
+      - name: Compile M2.0 reset entry for 68000
+        run: |
+          docker run --rm \
+            -v "$PWD:/work" \
+            -w /work \
+            amigadev/m68k-amigaos-gcc:latest \
+            m68k-amigaos-gcc -m68000 -ffreestanding -c kernel/startup.S -o build/m68k/startup.o
+      - name: Compile M2.0 kernel entry for 68000
+        run: |
+          docker run --rm \
+            -v "$PWD:/work" \
+            -w /work \
+            amigadev/m68k-amigaos-gcc:latest \
+            m68k-amigaos-gcc -m68000 -ffreestanding -Wall -Wextra -Werror -Iinclude -c kernel/kernel.c -o build/m68k/kernel.o
       - name: Verify m68k objects
         run: |
-          file build/m68k/core.o
-          file build/m68k/exec.o
-          file build/m68k/core.o | grep -qi 'Motorola 68000\|m68k'
-          file build/m68k/exec.o | grep -qi 'Motorola 68000\|m68k'
+          for f in build/m68k/core.o build/m68k/exec.o build/m68k/startup.o build/m68k/kernel.o; do
+            file "$f"
+            file "$f" | grep -qi 'Motorola 68000\|m68k'
+          done
