@@ -24,35 +24,43 @@ jobs:
         run: mkdir -p build/m68k
       - name: Compile core for 68000
         run: |
-          docker run --rm \
-            -v "$PWD:/work" \
-            -w /work \
-            amigadev/m68k-amigaos-gcc:latest \
+          docker run --rm -v "$PWD:/work" -w /work amigadev/m68k-amigaos-gcc:latest \
             m68k-amigaos-gcc -m68000 -ffreestanding -Wall -Wextra -Werror -Iinclude -c src/core.c -o build/m68k/core.o
       - name: Compile Exec nucleus for 68000
         run: |
-          docker run --rm \
-            -v "$PWD:/work" \
-            -w /work \
-            amigadev/m68k-amigaos-gcc:latest \
+          docker run --rm -v "$PWD:/work" -w /work amigadev/m68k-amigaos-gcc:latest \
             m68k-amigaos-gcc -m68000 -ffreestanding -Wall -Wextra -Werror -Iinclude -c src/exec.c -o build/m68k/exec.o
-      - name: Compile M2.0 reset entry for 68000
+      - name: Compile M2.1 reset vectors
         run: |
-          docker run --rm \
-            -v "$PWD:/work" \
-            -w /work \
-            amigadev/m68k-amigaos-gcc:latest \
+          docker run --rm -v "$PWD:/work" -w /work amigadev/m68k-amigaos-gcc:latest \
+            m68k-amigaos-gcc -m68000 -ffreestanding -c kernel/vectors.S -o build/m68k/vectors.o
+      - name: Compile M2.1 reset entry
+        run: |
+          docker run --rm -v "$PWD:/work" -w /work amigadev/m68k-amigaos-gcc:latest \
             m68k-amigaos-gcc -m68000 -ffreestanding -c kernel/startup.S -o build/m68k/startup.o
-      - name: Compile M2.0 kernel entry for 68000
+      - name: Compile M2.1 kernel entry
         run: |
-          docker run --rm \
-            -v "$PWD:/work" \
-            -w /work \
-            amigadev/m68k-amigaos-gcc:latest \
-            m68k-amigaos-gcc -m68000 -ffreestanding -Wall -Wextra -Werror -Iinclude -c kernel/kernel.c -o build/m68k/kernel.o
+          docker run --rm -v "$PWD:/work" -w /work amigadev/m68k-amigaos-gcc:latest \
+            m68k-amigaos-gcc -m68000 -ffreestanding -fno-common -Wall -Wextra -Werror -Os -Iinclude -c kernel/kernel.c -o build/m68k/kernel.o
+      - name: Link M2.1 ROM payload
+        run: |
+          docker run --rm -v "$PWD:/work" -w /work amigadev/m68k-amigaos-gcc:latest \
+            m68k-amigaos-ld -T kernel/linker.ld -Map build/m68k/libreexec-m2_1.map \
+            build/m68k/vectors.o build/m68k/startup.o build/m68k/kernel.o \
+            -o build/m68k/libreexec-m2_1.elf
+      - name: Convert M2.1 payload to raw binary
+        run: |
+          docker run --rm -v "$PWD:/work" -w /work amigadev/m68k-amigaos-gcc:latest \
+            m68k-amigaos-objcopy -O binary build/m68k/libreexec-m2_1.elf build/m68k/libreexec-m2_1.bin
+      - name: Build and qualify 512K ROM
+        run: |
+          python3 tools/make_m2_1_rom.py build/m68k/libreexec-m2_1.bin build/m68k/libreexec-m2_1.rom
+          python3 tests/check_m2_1.py build/m68k/libreexec-m2_1.rom
+          file build/m68k/libreexec-m2_1.elf
+          file build/m68k/libreexec-m2_1.rom
       - name: Verify m68k objects
         run: |
-          for f in build/m68k/core.o build/m68k/exec.o build/m68k/startup.o build/m68k/kernel.o; do
+          for f in build/m68k/core.o build/m68k/exec.o build/m68k/vectors.o build/m68k/startup.o build/m68k/kernel.o; do
             file "$f"
             file "$f" | grep -qi 'Motorola 68000\|m68k'
           done
