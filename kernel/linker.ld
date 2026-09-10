@@ -1,11 +1,16 @@
-/* LibreExec M2.0 provisional standalone image layout.
- * M2.1 will qualify the actual Amiga reset/ROM mapping and image format.
- */
+/* LibreExec M2.1 512 KiB classic Amiga ROM layout. */
 ENTRY(libreexec_reset)
+
+ROM_BASE = 0x00f80000;
 
 SECTIONS
 {
-    . = 0;
+    . = ROM_BASE;
+
+    .vectors : ALIGN(4)
+    {
+        KEEP(*(.vectors))
+    }
 
     .text : ALIGN(4)
     {
@@ -19,16 +24,13 @@ SECTIONS
         *(.data*)
     }
 
-    .bss (NOLOAD) : ALIGN(4)
-    {
-        *(.bss.boot)
-        *(.bss*)
-        *(COMMON)
-    }
-
     /DISCARD/ :
     {
+        *(.bss*)
+        *(COMMON)
         *(.comment*)
         *(.note*)
     }
 }
+
+ASSERT(SIZEOF(.vectors) == 8, "M2.1 requires exactly two reset vectors");
