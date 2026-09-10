@@ -1,0 +1,8 @@
+[fs-uae]
+amiga_model = A500
+kickstart_file = build/m68k/libreexec-m2_1.rom
+accuracy = 1
+fullscreen = 0
+
+# M2.1 runtime marker: COLOR00 is set to $0F0 (green) after OVL handoff
+# and successful entry into libreexec_kernel_main().
