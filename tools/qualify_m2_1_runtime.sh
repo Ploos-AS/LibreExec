@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-ROM=${1:-build/libreexec-m2_1.rom}
+ROM=${1:-build/m68k/libreexec-m2_1.rom}
 CFG=${2:-configs/fs-uae/a500-m2_1.fs-uae}
 
 if [ ! -f "$ROM" ]; then
@@ -26,6 +26,6 @@ if [ "$size" -ne 524288 ]; then
 fi
 
 echo "Launching visible M2.1 A500 runtime qualification."
-echo "PASS criterion: display reaches stable green COLOR00 ($0F0) after reset."
+echo 'PASS criterion: display reaches stable green COLOR00 ($0F0) after reset.'
 echo "Close FS-UAE after observation, then record PASS/FAIL in docs/M2_1_QUALIFICATION.md."
 exec fs-uae "$CFG"
