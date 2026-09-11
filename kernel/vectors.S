@@ -1,6 +1,6 @@
 /* LibreExec M2.1 Amiga reset vectors. */
 
-    .section .vectors,"a"
+    .section .text.boot.vectors,"ax"
     .align 2
     .globl libreexec_vectors
 libreexec_vectors:
