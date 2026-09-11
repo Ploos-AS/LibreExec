@@ -5,4 +5,5 @@
     .globl libreexec_vectors
 libreexec_vectors:
     .long 0x0007fffc
-    .long libreexec_reset
+    /* M2.1 ROM_BASE (0x00f80000) + two 32-bit reset vectors. */
+    .long 0x00f80008
