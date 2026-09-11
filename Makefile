@@ -15,7 +15,7 @@ CROSS_OBJ := $(CROSS_BUILD)/core.o $(CROSS_BUILD)/exec.o
 M2_OBJ := $(CROSS_BUILD)/startup.o $(CROSS_BUILD)/kernel.o
 TEST_EXEC := $(BUILD)/test_exec
 
-.PHONY: all check check-m0 check-m1 check-m1_1 check-m2_0 check-m2_1-runtime cross cross-check m2-objects clean
+.PHONY: all check check-m0 check-m1 check-m1_1 check-m2_0 m2_1-rom check-m2_1-runtime cross cross-check m2-objects clean
 
 all: $(OBJ)
 
@@ -57,6 +57,9 @@ m2-objects: $(M2_OBJ)
 	@$(CROSS_OBJDUMP) -f $(M2_OBJ) | grep -q 'architecture: m68k'
 	@echo "M2.0 68000 boot objects: PASS"
 
+m2_1-rom:
+	sh tools/build_m2_1_rom.sh
+
 check-m0: all
 	$(PYTHON) tests/check_m0.py
 
@@ -68,7 +71,7 @@ check-m1_1: cross-check
 check-m2_0:
 	$(PYTHON) tests/check_m2_0.py
 
-check-m2_1-runtime:
+check-m2_1-runtime: m2_1-rom
 	sh tools/qualify_m2_1_runtime.sh
 
 check: check-m0 check-m1 check-m2_0
